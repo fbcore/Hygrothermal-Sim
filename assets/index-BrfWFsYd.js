@@ -132,7 +132,8 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {\r
     let currentT = tempRead[idx];\r
     if (sumCoefT > 0.0) {\r
         let targetT = sumT / sumCoefT;\r
-        let factorT = min(1.0, sumCoefT / 5.0);\r
+        // Jacobi iteration requires factor < 0.5 to prevent checkerboard oscillations\r
+        let factorT = min(0.45, sumCoefT / 5.0);\r
         tempWrite[idx] = currentT + factorT * (targetT - currentT);\r
     } else {\r
         tempWrite[idx] = currentT;\r
@@ -141,7 +142,7 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {\r
     let currentP = pressRead[idx];\r
     if (sumCoefP > 0.0) {\r
         let targetP = sumP / sumCoefP;\r
-        let factorP = min(1.0, sumCoefP / 1e-10);\r
+        let factorP = min(0.45, sumCoefP / 1e-10);\r
         pressWrite[idx] = currentP + factorP * (targetP - currentP);\r
     } else {\r
         pressWrite[idx] = currentP;\r
