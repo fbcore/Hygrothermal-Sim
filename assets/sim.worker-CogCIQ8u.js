@@ -38,6 +38,7 @@ fn get_harmonic_mean(v1: f32, v2: f32) -> f32 {\r
 const AIR_MIXING_K: f32 = 2000.0;\r
 const AIR_CAVITY_K: f32 = 0.15;\r
 const BUOYANCY_STRENGTH: f32 = 0.08;\r
+const AIR_EFFECTIVE_PERM: f32 = 1e-5;\r
 const K_INDOOR_SURFACE: f32 = 0.01923;  // (1/0.13) * 0.0025\r
 const K_OUTDOOR_SURFACE: f32 = 0.0625; // (1/0.04) * 0.0025\r
 const VAPOR_PROOF_LIMIT: f32 = 1e-15;\r
@@ -145,8 +146,14 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {\r
         if (isAirSelf) {\r
             let edge = f32(config.width) * 0.1;\r
             if (f32(x) > edge && f32(x) < f32(config.width) - edge) {\r
-                let tAbove = select(nextT, tempRead[get_idx(x, y - 1u)], y > 0u);\r
-                let tBelow = select(nextT, tempRead[get_idx(x, y + 1u)], y < config.height - 1u);\r
+                var tAbove = nextT;\r
+                var tBelow = nextT;\r
+                if (y > 0u) {\r
+                    tAbove = tempRead[get_idx(x, y - 1u)];\r
+                }\r
+                if (y < config.height - 1u) {\r
+                    tBelow = tempRead[get_idx(x, y + 1u)];\r
+                }\r
                 nextT += (tBelow - tAbove) * BUOYANCY_STRENGTH;\r
             }\r
         }\r
